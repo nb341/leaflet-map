@@ -1,0 +1,84 @@
+<!doctype html>
+  <head>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+   integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+   crossorigin=""/>
+   
+   <style>
+       #mapid { height: 680px; width: 800px;}
+       input{
+  display: block;
+}
+   </style>
+    <!-- Make sure you put this AFTER Leaflet's CSS -->
+ <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+   integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+   crossorigin=""></script>
+  </head>
+  
+   <body>
+   <div id="mapid"></div>
+
+  <br>
+  <input style="width: 400px;" value="" name="coord" id="coord"/>
+<input style="width: 400px;" value="" name="add" id="add"/>
+   </body>
+</html>
+
+<script>
+var mymap = L.map('mapid').setView([10.6918, -61.2225], 10);
+L.tileLayer('https://api.mapbox.com/styles/v1/{id}/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+    attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
+    maxZoom: 18,
+    id: 'mapbox/streets-v11',
+    tileSize: 512,
+    zoomOffset: -1,
+    accessToken: 'pk.eyJ1IjoibmFyaW4zNDEiLCJhIjoiY2tqd3Z5cWtoMDdjZTJ4dDg3aDZkaGtoaSJ9.R2Ve1U9JMhDod5ToiqDsBQ'
+}).addTo(mymap);
+
+var marker = L.marker([10.269123951286135, -61.29448052920924],{
+    draggable: true
+}).addTo(mymap);
+
+
+
+marker.on("drag", function(e) {
+    var marker = e.target;
+    var position = marker.getLatLng();
+    mymap.panTo(new L.LatLng(position.lat, position.lng));
+    marker.bindPopup(marker.getLatLng().toString()).openPopup();
+    let input = document.querySelector("#coord");
+    let add = document.querySelector("#add");
+    input.value = position.lat+", "+position.lng;
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${position.lat}&lon=${position.lng}`)
+  .then(response => response.json())
+  .then(data => 
+        {
+         add.value = "";
+       for(let x in data.address){
+         add.value += data.address[x]+', ';
+       }
+    }
+       
+       );
+});
+
+ // <addressparts>
+ //      <house_number>135</house_number>
+ //      <road>Pilkington Avenue</road>
+ //      <village>Wylde Green</village>
+ //      <town>Sutton Coldfield</town>
+ //      <city>City of Birmingham</city>
+ //      <county>West Midlands (county)</county>
+ //      <postcode>B72</postcode>
+ //      <country>United Kingdom</country>
+ //      <country_code>gb</country_code>
+ //    </addressparts>
+
+/**
+ useful docs
+ https://nominatim.org/release-docs/develop/api/Reverse/
+
+**/
+
+</script>
